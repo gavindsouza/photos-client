@@ -1,5 +1,8 @@
 import tkinter as tk
+from PIL import ImageTk, Image
 import sqlite3 as sq
+import requests   
+global img
 
 def main():   
 
@@ -9,14 +12,36 @@ def main():
    
     ######### IP ADDRESS OF SERVER ################
 
-    ip_frame= tk.Frame()
+    def check_server_ip_address(address):
+        print("Reached here ",address)
+        # check_if_server= requests.get("http://"+address+"/hello")
+        # check_if_server= requests.get("https://api.github.com/events")
+
+        if 1 == 1:
+            print("Server is okay")
+            canvas= tk.Canvas(main_ip_frame)
+            image= Image.open("checkmark.png")
+            image= image.resize((20, 20))
+            canvas.img = ImageTk.PhotoImage(image)
+            canvas.create_image(200, 200, image=canvas.img) 
+            canvas.pack(side=tk.RIGHT)
+
+
+        else:
+            
+            print("Server is not okay") 
+
+    main_ip_frame= tk.Frame()
+    ip_frame= tk.Frame(main_ip_frame) 
     ip= tk.StringVar(ip_frame)
     ip_label = tk.Label(ip_frame, text="Server IP Address")
     ip_entry= tk.Entry(ip_frame, textvariable= ip)
     ip_entry.pack(padx= 5, pady= 5, side=tk.RIGHT)
     ip_label.pack(padx= 5, pady= 5, side=tk.LEFT)
-    ip_frame.pack()
-     
+    ip_frame.bind("<FocusOut>", lambda event: check_server_ip_address(address= ip.get()))
+    ip_frame.pack(side=tk.LEFT)
+    main_ip_frame.pack()
+
     ########## USERNAME ################
 
     username_frame= tk.Frame()
@@ -40,7 +65,8 @@ def main():
 
     root.mainloop()
 
-    print("This username ",username.get(), "This password ",password.get(), "IP Address ",ip.get())
+
+    print("Username ",username.get(), "\nPassword ",password.get(), "\nIP Address ",ip.get())
 
 if __name__ == '__main__':
     main()
