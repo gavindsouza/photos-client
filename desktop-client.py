@@ -14,22 +14,35 @@ def main():
 
     def check_server_ip_address(address):
         print("Reached here ",address)
+        print("http://"+address+"/hello")
         # check_if_server= requests.get("http://"+address+"/hello")
         # check_if_server= requests.get("https://api.github.com/events")
 
         if 1 == 1:
             print("Server is okay")
+
+            ##CheckBox Image
             canvas= tk.Canvas(main_ip_frame)
             image= Image.open("checkmark.png")
             image= image.resize((20, 20))
             canvas.img = ImageTk.PhotoImage(image)
-            canvas.create_image(200, 200, image=canvas.img) 
+            canvas.create_image(10, 10, image=canvas.img) 
             canvas.pack(side=tk.RIGHT)
+            ########
+
+            check_credentials['state']= 'normal'
 
 
-        else:
-            
+        else:    
             print("Server is not okay") 
+
+    def send_credentials(username, password):
+        payload= {
+            username: username,
+            password: password
+        }
+        # send_credentials= requests.post("http://"+address, data= payload)
+        # print(username, password)
 
     main_ip_frame= tk.Frame()
     ip_frame= tk.Frame(main_ip_frame) 
@@ -62,6 +75,11 @@ def main():
     password_entry.pack(padx= 5, pady= 5, side= tk.RIGHT)
     password_label.pack(padx= 5, pady= 5, side= tk.LEFT)
     password_frame.pack()
+
+    ########## CHECK CREDENTIALS ######
+
+    check_credentials= tk.Button(text= "Check!", state= tk.DISABLED, command= lambda: send_credentials(username= username.get(), password= password.get()))
+    check_credentials.pack()
 
     root.mainloop()
 
