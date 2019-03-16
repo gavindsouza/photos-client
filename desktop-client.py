@@ -5,6 +5,8 @@ import requests
 import json
 from argon2 import PasswordHasher   
 
+ph= PasswordHasher()
+
 def main():   
 
     root= tk.Tk()
@@ -53,7 +55,7 @@ def main():
         conn = sq.connect('Desktop-Database.db')
         connection= conn.cursor()
         connection.execute("CREATE TABLE IF NOT EXISTS user_credentials (Username TEXT, Password TEXT, Token TEXT)") 
-        connection.execute('INSERT INTO user_credentials (Username, Password, Token) VALUES (?, ?, ?)',(username, password, token)) 
+        connection.execute('INSERT INTO user_credentials (Username, Password, Token) VALUES (?, ?, ?)',(username, ph.hash(password), ph.hash(token))) 
         conn.commit()
     
     def send_token(token):
