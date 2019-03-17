@@ -3,11 +3,15 @@ from PIL import ImageTk, Image
 import sqlite3 as sq
 import requests
 import json
+import os
 from argon2 import PasswordHasher   
 
 ph= PasswordHasher()
 
 def main():   
+
+    conn = sq.connect('Desktop-Database.db')
+    connection= conn.cursor()
 
     root= tk.Tk()
     root.title("Desktop-Client")
@@ -17,12 +21,12 @@ def main():
 
     def check_server_ip_address(address):
         print("Reached here ",address)
-        print("http://"+address+"/hello")
-        # check_if_server= requests.get("http://"+address+"/hello")
+        print("http://"+address+":5000/hello")
+        check_if_server= requests.get("http://"+address+":5000/hello")
         # check_if_server= requests.get("https://api.github.com/events")
 
-        # if check_if_server.status_code == 200:
-        if 1 == 1:
+        if check_if_server.status_code == 200:
+        # if 1 == 1:
             print("Server is okay ")
 
             ##CheckBox Image
@@ -41,10 +45,10 @@ def main():
         else:    
             print("Server is not okay") 
 
-    def send_credentials(username, password):
+    def send_credentials(username, password, address):
         payload= {
-            username: username,
-            password: password
+            'username': username,
+            'password': password
         }
         # receive_token= requests.post("http://"+address, data= payload)
         # print(receive_token.json())
@@ -52,15 +56,175 @@ def main():
         # token_from_server= json.loads(receive_token)
         token= "aaaa"
         print(username, password, token)
-        conn = sq.connect('Desktop-Database.db')
-        connection= conn.cursor()
         connection.execute("CREATE TABLE IF NOT EXISTS user_credentials (Username TEXT, Password TEXT, Token TEXT)") 
         connection.execute('INSERT INTO user_credentials (Username, Password, Token) VALUES (?, ?, ?)',(username, ph.hash(password), ph.hash(token))) 
         conn.commit()
+
+        send_pictures(token, address)
+
+    def send_pictures(token, address):
+        
+        image = [
+            "ase",
+            "art",
+            "bmp",
+            "blp",
+            "cd5",
+            "cit",
+            "cpt",
+            "cr2",
+            "cut",
+            "dds",
+            "dib",
+            "djvu",
+            "egt",
+            "exif",
+            "gif",
+            "gpl",
+            "grf",
+            "icns",
+            "ico",
+            "iff",
+            "jng",
+            "jpeg",
+            "jpg",
+            "jfif",
+            "jp2",
+            "jps",
+            "lbm",
+            "max",
+            "miff",
+            "mng",
+            "msp",
+            "nitf",
+            "ota",
+            "pbm",
+            "pc1",
+            "pc2",
+            "pc3",
+            "pcf",
+            "pcx",
+            "pdn",
+            "pgm",
+            "PI1",
+            "PI2",
+            "PI3",
+            "pict",
+            "pct",
+            "pnm",
+            "pns",
+            "ppm",
+            "psb",
+            "psd",
+            "pdd",
+            "psp",
+            "px",
+            "pxm",
+            "pxr",
+            "qfx",
+            "raw",
+            "rle",
+            "sct",
+            "sgi",
+            "rgb",
+            "int",
+            "bw",
+            "tga",
+            "tiff",
+            "tif",
+            "vtf",
+            "xbm",
+            "xcf",
+            "xpm",
+            "3dv",
+            "amf",
+            "ai",
+            "awg",
+            "cgm",
+            "cdr",
+            "cmx",
+            "dxf",
+            "e2d",
+            "egt",
+            "eps",
+            "fs",
+            "gbr",
+            "odg",
+            "svg",
+            "stl",
+            "vrml",
+            "x3d",
+            "sxd",
+            "v2d",
+            "vnd",
+            "wmf",
+            "emf",
+            "art",
+            "xar",
+            "png",
+            "webp",
+            "jxr",
+            "hdp",
+            "wdp",
+            "cur",
+            "ecw",
+            "iff",
+            "lbm",
+            "liff",
+            "nrrd",
+            "pam",
+            "pcx",
+            "pgf",
+            "sgi",
+            "rgb",
+            "rgba",
+            "bw",
+            "int",
+            "inta",
+            "sid",
+            "ras",
+            "sun",
+            "tga"
+        ]
+
+        img= []
+
+        def tree(path, *args):
+            if path != '':
+                path = path
+            else:
+                path = args
+            try:
+                for object in os.listdir(path):
+                    if os.path.isdir(path + '/' + object):
+                        tree(path + '/' + object)
+                    elif os.path.isfile(path + '/' + object):
+                        ext = object.split('.')[-1]
+                        if ext in image:
+                            img.append('{0}/{1}'.format(path, object))
+
+            # except NotADirectoryError or FileNotFoundError or OSError or PermissionError:
+            except Exception as e:
+                pass
+
+        path= "/home/aarish/aarish/mh2019"
+        tree(path)
+        print(img)
+
+        for path in img:
+            data= {
+                'path': path,
+                'media': open(path, 'rb'),
+                'token': token,
+                'enctype': 'multipart/form-data'
+            }
+            print(data)
+            send_image= requests.post("http://"+address+":5000/api/v1/upload", data= data)
+
     
     def send_token(token):
         payload= {
-            token: token
+            'token': token
         }
         # send_token= requests.post("http://"+address, data= payload)
         print(token)
@@ -101,7 +265,7 @@ def main():
 
     ########## CHECK CREDENTIALS OF USERNAME AND PASSWORD ######
 
-    check_credentials= tk.Button(text= "Check!", state= tk.DISABLED, command= lambda: send_credentials(username= username.get(), password= password.get()))
+    check_credentials= tk.Button(text= "Check!", state= tk.DISABLED, command= lambda: send_credentials(username= username.get(), password= password.get(), address= ip.get()))
     check_credentials.pack() 
 
     ########## TOKEN #####################
@@ -124,4 +288,17 @@ def main():
     print("Username ",username.get(), "\nPassword ",password.get(), "\nIP Address ",ip.get(),"\nToken ",token.get())
 
 if __name__ == '__main__':
+    conn = sq.connect('Desktop-Database.db')
+    connection= conn.cursor()
+
+    connection.execute("SELECT * FROM user_credentials")
+    conn.commit()
+
+    data= connection.fetchall()
+
+    # if data:
+    #     print("Not Empty")
+
+    # else:
+    print("Empty")    
     main()
