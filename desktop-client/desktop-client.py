@@ -35,7 +35,7 @@ def main():
 
             # CheckBox Image
             canvas = tk.Canvas(main_ip_frame)
-            image = Image.open("checkmark.png")
+            image = Image.open("utils/checkmark.png")
             image = image.resize((20, 20))
             canvas.img = ImageTk.PhotoImage(image)
             canvas.create_image(10, 10, image=canvas.img)
