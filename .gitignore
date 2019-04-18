@@ -105,5 +105,7 @@ app/static/node_modules
 .directory
 .vscode
 .git
+*.db
+*.sqlite
 
 # custom dirs
