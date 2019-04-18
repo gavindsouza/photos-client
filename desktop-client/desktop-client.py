@@ -133,6 +133,7 @@ supported_img_list = [
     "sun",
     "tga"
 ]
+img_path_list = []
 hasher = PasswordHasher()
 
 
@@ -200,27 +201,28 @@ def receive_token(username, password, address):
     
 
 
-def gen_img_list(path, *args):
-    img_path_list = []
-
-    if path != '':
-        path = path
-    else:
-        path = args
+def gen_img_list(path):
+    """
+    Current behaviour: finds all img from root path recursively and generates list of abspath of img
+    Goal behaviour: generates list of all sub-dirs containing img in root path  
+    """
+    global img_path_list
+    if path not in ['', ' ', None]:
         try:
-            for object in os.listdir(path):
-                if os.path.isdir(path + '/' + object):
-                    gen_img_list(path + '/' + object)
-                elif os.path.isfile(path + '/' + object):
-                    ext = object.split('.')[-1]
+            for fs_object in os.listdir(path):
+                if os.path.isdir(path + '/' + fs_object):
+                    gen_img_list(path + '/' + fs_object)
+                elif os.path.isfile(path + '/' + fs_object):
+                    ext = fs_object.split('.')[-1]
                     if ext in supported_img_list:
-                        img_path_list.append('{0}/{1}'.format(path, object))
-
+                        img_path_list.append('{0}/{1}'.format(path, fs_object))
+                        
         # except NotADirectoryError or FileNotFoundError or OSError or PermissionError:
         except Exception:
             pass
 
     return img_path_list
+
 
 
 def send_pictures(token, address, img_list):
@@ -280,7 +282,6 @@ def main():
     password = tk.StringVar(password_frame)
     password_label = tk.Label(password_frame, text="Password")
     password_entry = tk.Entry(password_frame, show="*", textvariable=password)
-    # password_entry.bind('<Return>',get_password)
     password_entry.pack(padx=5, pady=5, side=tk.RIGHT)
     password_label.pack(padx=5, pady=5, side=tk.LEFT)
     password_frame.pack()
@@ -316,8 +317,7 @@ def main():
 
 if __name__ == '__main__':
     path = "/home/gavin"
-    img = gen_img_list(path)
-    print(img)
+    img_on_disk = gen_img_list(path)
 
     # Set up the database for credentials
     with Database() as db:
